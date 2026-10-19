@@ -1,0 +1,21 @@
+name: Build APK
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: unzip ProjectorLauncher.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+      - run: cd ProjectorLauncher && gradle assembleDebug
+      - run: gh release create v${{ github.run_number }} ProjectorLauncher/app/build/outputs/apk/debug/app-debug.apk --repo ${{ github.repository }} --title Launcher
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
